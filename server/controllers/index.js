@@ -3,6 +3,8 @@ const models = require('../models');
 
 // get the Cat model
 const Cat = models.Cat.CatModel;
+//get the Dog Model
+const Dog = models.Dog.DogModel;
 
 // default fake data so that we have something to work with until we make a real Cat
 const defaultData = {
@@ -12,6 +14,8 @@ const defaultData = {
 
 // object for us to keep track of the last Cat we made and dynamically update it sometimes
 let lastAdded = new Cat(defaultData);
+
+let lastAdded2 = new Dog(defaultData);
 
 // function to handle requests to the main page
 // controller functions in Express receive the full HTTP request
@@ -45,6 +49,11 @@ const readAllCats = (req, res, callback) => {
   Cat.find(callback).lean();
 };
 
+const readAllDogs = (req, res, callback) => {
+  Dog.find(callback).lean();
+};
+
+
 
 // function to find a specific cat on request.
 // Express functions always receive the request and the response.
@@ -68,6 +77,17 @@ const readCat = (req, res) => {
   // Behind the scenes this runs the findOne method.
   // You can find the findByName function in the model file.
   Cat.findByName(name1, callback);
+};
+
+const readDog = (req, res) => {
+  const name2 = req.query.name;
+  const callback = (err, doc) => {
+    if (err) {
+      return res.status(500).json({ err }); 
+    }
+    return res.json(doc);
+  };
+  Dog.findByName(name2, callback);
 };
 
 // function to handle requests to the page1 page
@@ -168,6 +188,39 @@ const setName = (req, res) => {
   return res;
 };
 
+const setName2 = (req, res) => {
+ 
+  if (!req.body.firstname || !req.body.lastname) {
+    return res.status(400).json({ error: 'firstname and lastname are required' });
+  }
+
+  
+  const name = `${req.body.firstname} ${req.body.lastname}`;
+
+ 
+  const dogData = {
+    name,
+    age: req.body.age,
+    breed: req.body.breed,
+  };
+    
+  const newDog = new Dog(dogData);
+
+  const savePromise = newDog.save();
+
+  savePromise.then(() => {
+    
+    lastAdded = newDog;
+    
+    res.json({ name: lastAdded.name, age: lastAdded.age, breed: lastAdded.breed });
+  });
+
+  // if error, return it
+  savePromise.catch((err) => res.status(500).json({ err }));
+
+  return res;
+};
+
 
 // function to handle requests search for a name and return the object
 // controller functions in Express receive the full HTTP request
@@ -205,6 +258,27 @@ const searchName = (req, res) => {
 
     // if a match, send the match back
     return res.json({ name: doc.name, beds: doc.bedsOwned });
+  });
+};
+
+const searchName2 = (req, res) => {
+  
+  if (!req.query.name) {
+    return res.status(400).json({ error: 'Name is required to perform a search' });
+  }
+    
+  return Dog.findByName(req.query.name, (err, doc) => {
+    
+    if (err) {
+      return res.status(500).json({ err }); 
+    }
+
+    
+    if (!doc) {
+      return res.json({ error: 'No cats found' });
+    }
+      
+    return res.json({ name: doc.name, age: doc.age, breed: doc.breed });
   });
 };
 
