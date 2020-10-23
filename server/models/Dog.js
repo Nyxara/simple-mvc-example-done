@@ -15,7 +15,7 @@ const DogSchema = new mongoose.Schema({
     min: 0,
     required: true,
   },
-    
+
   breed: {
     type: String,
     trim: true,
@@ -38,7 +38,6 @@ DogSchema.statics.findByName = (name, callback) => {
 };
 
 DogModel = mongoose.model('Dog', DogSchema);
-
 
 module.exports.DogModel = DogModel;
 module.exports.DogSchema = DogSchema;

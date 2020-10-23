@@ -3,7 +3,7 @@ const models = require('../models');
 
 // get the Cat model
 const Cat = models.Cat.CatModel;
-//get the Dog Model
+// get the Dog Model
 const Dog = models.Dog.DogModel;
 
 // default fake data so that we have something to work with until we make a real Cat
@@ -14,8 +14,6 @@ const defaultData = {
 
 // object for us to keep track of the last Cat we made and dynamically update it sometimes
 let lastAdded = new Cat(defaultData);
-
-let lastAdded2 = new Dog(defaultData);
 
 // function to handle requests to the main page
 // controller functions in Express receive the full HTTP request
@@ -53,8 +51,6 @@ const readAllDogs = (req, res, callback) => {
   Dog.find(callback).lean();
 };
 
-
-
 // function to find a specific cat on request.
 // Express functions always receive the request and the response.
 const readCat = (req, res) => {
@@ -83,7 +79,7 @@ const readDog = (req, res) => {
   const name2 = req.query.name;
   const callback = (err, doc) => {
     if (err) {
-      return res.status(500).json({ err }); 
+      return res.status(500).json({ err });
     }
     return res.json(doc);
   };
@@ -125,13 +121,26 @@ const hostPage2 = (req, res) => {
 // controller functions in Express receive the full HTTP request
 // and a pre-filled out response object to send
 const hostPage3 = (req, res) => {
-    // res.render takes a name of a page to render.
-    // These must be in the folder you specified as views in your main app.js file
-    // Additionally, you don't need .jade because you registered the file type
-    // in the app.js as jade. Calling res.render('index')
-    // actually calls index.jade. A second parameter of JSON can be passed
-    // into the jade to be used as variables with #{varName}
+  // res.render takes a name of a page to render.
+  // These must be in the folder you specified as views in your main app.js file
+  // Additionally, you don't need .jade because you registered the file type
+  // in the app.js as jade. Calling res.render('index')
+  // actually calls index.jade. A second parameter of JSON can be passed
+  // into the jade to be used as variables with #{varName}
   res.render('page3');
+};
+
+const hostPage4 = (req, res) => {
+  const callback = (err, docs) => {
+    if (err) {
+      return res.status(500).json({ err }); // if error, return it
+    }
+
+    // return success
+    return res.render('page4', { dogs: docs });
+  };
+
+  readAllDogs(req, res, callback);
 };
 
 // function to handle get request to send the name
@@ -189,29 +198,25 @@ const setName = (req, res) => {
 };
 
 const setName2 = (req, res) => {
- 
   if (!req.body.firstname || !req.body.lastname) {
     return res.status(400).json({ error: 'firstname and lastname are required' });
   }
 
-  
   const name = `${req.body.firstname} ${req.body.lastname}`;
 
- 
   const dogData = {
     name,
     age: req.body.age,
     breed: req.body.breed,
   };
-    
+
   const newDog = new Dog(dogData);
 
   const savePromise = newDog.save();
 
   savePromise.then(() => {
-    
     lastAdded = newDog;
-    
+
     res.json({ name: lastAdded.name, age: lastAdded.age, breed: lastAdded.breed });
   });
 
@@ -220,7 +225,6 @@ const setName2 = (req, res) => {
 
   return res;
 };
-
 
 // function to handle requests search for a name and return the object
 // controller functions in Express receive the full HTTP request
@@ -262,22 +266,19 @@ const searchName = (req, res) => {
 };
 
 const searchName2 = (req, res) => {
-  
   if (!req.query.name) {
     return res.status(400).json({ error: 'Name is required to perform a search' });
   }
-    
+
   return Dog.findByName(req.query.name, (err, doc) => {
-    
     if (err) {
-      return res.status(500).json({ err }); 
+      return res.status(500).json({ err });
     }
 
-    
     if (!doc) {
       return res.json({ error: 'No cats found' });
     }
-      
+
     return res.json({ name: doc.name, age: doc.age, breed: doc.breed });
   });
 };
@@ -329,10 +330,14 @@ module.exports = {
   page1: hostPage1,
   page2: hostPage2,
   page3: hostPage3,
+  page4: hostPage4,
   readCat,
+  readDog,
   getName,
   setName,
+  setName2,
   updateLast,
   searchName,
+  searchName2,
   notFound,
 };
