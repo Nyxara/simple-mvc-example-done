@@ -215,13 +215,12 @@ const setName2 = (req, res) => {
   const savePromise = newDog.save();
 
   savePromise.then(() => {
+    // set the lastAdded cat to our newest cat object.
+    // This way we can update it dynamically
     lastAdded = newDog;
-
+    // return success
     res.json({ name: lastAdded.name, age: lastAdded.age, breed: lastAdded.breed });
   });
-
-  // if error, return it
-  savePromise.catch((err) => res.status(500).json({ err }));
 
   return res;
 };
@@ -276,7 +275,7 @@ const searchName2 = (req, res) => {
     }
 
     if (!doc) {
-      return res.json({ error: 'No cats found' });
+      return res.json({ error: 'No dogs found' });
     }
 
     return res.json({ name: doc.name, age: doc.age, breed: doc.breed });
